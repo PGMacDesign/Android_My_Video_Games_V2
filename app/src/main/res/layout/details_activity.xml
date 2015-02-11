@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:id="@+id/relative_layout_details"
+                android:background="@drawable/custom_background2"
+                android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text=""
+        android:gravity="center"
+        android:id="@+id/centering_piece"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageView"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignBottom="@+id/centering_piece"
+        android:gravity="center"
+        android:layout_alignEnd="@+id/centering_piece"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="160dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textSize="35dp"
+        android:id="@+id/details_activity_game_name"
+        android:layout_alignParentEnd="true"
+        android:gravity="center"
+        android:layout_toEndOf="@+id/centering_piece"
+        android:layout_alignParentTop="true"
+        android:layout_gravity="center"
+        android:layout_above="@+id/centering_piece"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/details_activity_text_view_release_date"
+        android:layout_alignParentEnd="true"
+        android:gravity="center"
+        android:layout_toEndOf="@+id/imageView"
+        android:layout_gravity="center"
+        android:layout_alignBottom="@+id/centering_piece"
+        android:layout_alignTop="@+id/centering_piece"/>
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/details_activity_text_view_release_date"
+        android:layout_alignEnd="@+id/details_activity_text_view_release_date"
+        android:layout_above="@+id/details_activity_platform"
+        android:layout_alignParentStart="true"
+        >
+
+        <TextView
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/details_activity_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/details_activity_text_view_release_date"
+            android:layout_alignEnd="@+id/details_activity_text_view_release_date"
+            android:layout_above="@+id/details_activity_platform"
+            android:layout_alignParentStart="true"/>
+    </ScrollView>
+
+    <RatingBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/details_activity_ratingBar"
+        android:isIndicator="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Game Played"
+        android:isIndicator="true"
+        android:id="@+id/details_activity_checkbox"
+        android:layout_alignBottom="@+id/details_activity_ratingBar"
+        android:layout_alignParentStart="true"
+        android:layout_alignTop="@+id/details_activity_ratingBar"
+        android:layout_toStartOf="@+id/details_activity_ratingBar"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="25dp"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="12dp"
+        android:gravity="center"
+        android:paddingBottom="5dp"
+        android:id="@+id/details_activity_platform"
+        android:layout_above="@+id/details_activity_checkbox"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/centering_piece"
+        android:layout_alignParentEnd="true"/>
+
+</RelativeLayout>
