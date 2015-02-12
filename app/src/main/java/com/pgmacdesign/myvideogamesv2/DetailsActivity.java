@@ -38,7 +38,7 @@ public class DetailsActivity extends ActionBarActivity {
 
 		try {
 			//Fill the list with the row info
-			pulled_data = MainActivity.pullRowFromDatabase(this, game_id);
+			//pulled_data = MainActivity.pullRowFromDatabase(this, game_id);
 		} catch (Exception e){
 			e.printStackTrace();
 		}

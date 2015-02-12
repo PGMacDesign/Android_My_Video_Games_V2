@@ -3,6 +3,7 @@ package com.pgmacdesign.myvideogamesv2.Database;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 /**
  The database class. It will hold all of the data retrieved from the website that the user chose from
@@ -13,7 +14,7 @@ public class DbHelper extends SQLiteOpenHelper {
 	//Standard variables for the database functions
 	public static final String DATABASE_NAME = "videogamesdb2";
 	public static final String TABLE_NAME = "videogamestable";
-	public static final int DATABASE_VERSION = 4;
+	public static final int DATABASE_VERSION = 6;
 	public static final String DROP_TABLE = "DROP TABLE IF EXISTS "+ TABLE_NAME;
 
 	public static final String C_ID = "_id";
@@ -62,11 +63,13 @@ public class DbHelper extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL(CREATE_TABLE);
+		Log.d("Database has been ", "created");
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		db.execSQL(DROP_TABLE);
+		Log.d("Database has been ", "deleted");
 		onCreate(db);
 	}
 }

@@ -55,8 +55,6 @@ public class ContentProviderClass extends ContentProvider {
 			db.insert(dbHelper.TABLE_NAME, null, values);
 		}
 
-
-
 		//Insert data to database
 		getContext().getContentResolver().notifyChange(uri, null);
 
