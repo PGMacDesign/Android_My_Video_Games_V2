@@ -46,7 +46,6 @@ public class DBFunctions {
 
 		String[] columns = {dbHelper.COLUMN_GAME_ID};
 		Cursor cursor = db.query(dbHelper.TABLE_NAME, columns, null, null, null, null, null);
-		cursor.moveToFirst();
 
 		//Loop through the cursor and add the row IDs to the list
 		while(cursor.moveToNext()){
@@ -76,8 +75,6 @@ public class DBFunctions {
 		String[] whereArgs = {game_id};
 
 		Cursor cursor1 = db.query(dbHelper.TABLE_NAME, columns, dbHelper.COLUMN_GAME_ID + " =?", whereArgs, null, null, null);
-
-		cursor1.moveToFirst();
 
 		//Loop through the cursor and add the row IDs to the list
 		while(cursor1.moveToNext()){

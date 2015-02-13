@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -100,7 +101,7 @@ public class ListFragment extends Fragment{
 	}
 
 	//This custom adapter is used to fill the respective data into the listview
-	class CustomAdapter extends BaseAdapter{
+	class CustomAdapter extends BaseAdapter {
 
 		List<String> passed_game_ids = new ArrayList<>();
 		Context context;
@@ -223,11 +224,9 @@ public class ListFragment extends Fragment{
 						dbHelper.COLUMN_ORIGINAL_RELEASE_DATE, dbHelper.COLUMN_PLATFORM_NAME,
 						dbHelper.COLUMN_PLATFORM_ABBREVIATION, dbHelper.COLUMN_PLAYED_CHECKBOX, dbHelper.COLUMN_RATING};
 
-				String[] whereArgs = {passed_game_ids.get(i)};
+				String[] whereArgs = {passed_game_ids.get(position)};
 
 				Cursor cursor1 = db.query(dbHelper.TABLE_NAME, columns, dbHelper.COLUMN_GAME_ID + " =?", whereArgs, null, null, null);
-
-				cursor1.moveToFirst();
 
 				//String values to be used in this class:
 				game_id = null;
@@ -236,23 +235,22 @@ public class ListFragment extends Fragment{
 				String icon_url = "";
 				String played_game = null;
 				rating1 = null;
+				String temp_game_id = null;
 
 				//Loop through the cursor and add the row IDs to the list
 				while(cursor1.moveToNext()){
 					if (cursor1 != null){
 						//Get the values at each of the respective columns
-						game_id = cursor1.getString(cursor1.getColumnIndex(dbHelper.COLUMN_GAME_ID));
+						temp_game_id = cursor1.getString(cursor1.getColumnIndex(dbHelper.COLUMN_GAME_ID));
 						icon_url = cursor1.getString(cursor1.getColumnIndex(dbHelper.COLUMN_ICON_URL));
 						game_name = cursor1.getString(cursor1.getColumnIndex(dbHelper.COLUMN_NAME));
 						platform_name = cursor1.getString(cursor1.getColumnIndex(dbHelper.COLUMN_PLATFORM_NAME));
 						played_game = cursor1.getString(cursor1.getColumnIndex(dbHelper.COLUMN_PLAYED_CHECKBOX));
 						rating1 = cursor1.getString(cursor1.getColumnIndex(dbHelper.COLUMN_RATING));
-
 					}
 				}
 
-				final String passed_game_id = game_id;
-
+				final String final_game_id = temp_game_id;
 				holder.tv_game_name.setText(game_name); //Game Name
 				holder.tv_console_name.setText(platform_name); //Platform Name
 
@@ -274,128 +272,27 @@ public class ListFragment extends Fragment{
 						holder.checkBox.setChecked(false);
 					}
 
-					/*
-					Add an on item click listener to the picture and the title of the game so
-					if they click on it it will open a new activity with more details
-					 */
-					holder.imageView.setOnClickListener(new View.OnClickListener() {
-						public void onClick(View v) {
-							Log.d("Game ID is :", passed_game_id);
-							Intent intent = new Intent(getActivity(), DetailsActivity.class);
-							intent.putExtra("game_id", passed_game_id);
-							startActivity(intent);
-						}
-					});
-
-					//Same for title/ name as for image view, allows for a larger click area
-					holder.tv_game_name.setOnClickListener(new View.OnClickListener() {
-						public void onClick(View v) {
-							Log.d("Game ID is :", passed_game_id);
-							Intent intent = new Intent(getActivity(), DetailsActivity.class);
-							intent.putExtra("game_id", passed_game_id);
-							startActivity(intent);
-						}
-					});
+					//Custom on click listener handles the clicks from the image button and the title. Opens up the DetailsActivity
+					holder.imageView.setOnClickListener(new CustomButton(final_game_id));
+					holder.tv_game_name.setOnClickListener(new CustomButton(final_game_id));
 
 					//Manages the checkbox and whether or not it is checked. Updates the database when clicked
-					holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-						public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-							String game_id = passed_game_id;
-
-							if (isChecked){
-
-								try {
-
-									//Update the database
-									ContentValues cv1 = new ContentValues();
-									cv1.put(dbHelper.COLUMN_PLAYED_CHECKBOX, "true");
-
-									String[] whereArgs = {game_id};
-
-									//Utilize the content resolver to add the values into the database
-									contentResolver.update(ContentProviderClass.LOC_URI, cv1, dbHelper.COLUMN_GAME_ID + " =?", whereArgs); //Update data into the db
-
-									Log.d("Database ", "Updated Successfully with boolean - true");
-
-								} catch (Error e){
-									e.printStackTrace();
-									Log.d("Database ", "Was NOT updated with boolean");
-								}
-
-							} else {
-
-								try {
-									//Update the database
-									ContentValues cv1 = new ContentValues();
-									cv1.put(dbHelper.COLUMN_PLAYED_CHECKBOX, "false");
-
-									String[] whereArgs = {game_id};
-
-									//Utilize the content resolver to add the values into the database
-									contentResolver.update(ContentProviderClass.LOC_URI, cv1, dbHelper.COLUMN_GAME_ID + " =?", whereArgs); //Update data into the db
-
-									Log.d("Database ", "Updated Successfully with boolean - false");
-								} catch (Error e){
-									e.printStackTrace();
-									Log.d("Database ", "Was NOT updated with boolean");
-								}
-
-							}
-						}
-					});
+					holder.checkBox.setOnCheckedChangeListener(new CustomCheckbox(final_game_id));
 
 					//This handles long presses. If the user long presses an icon, it will ask if they want to delete the game
-					holder.tv_console_name.setOnLongClickListener(new View.OnLongClickListener() {
-						public boolean onLongClick(View v) {
-							//Dialog popup asking if they want to delete the record
-							DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog, int which) {
-									switch (which) {
-										//If they hit close, it will dismiss this dialog box
-										case DialogInterface.BUTTON_NEGATIVE:
-											try {
-												dialog.dismiss();
-											} catch (Exception e) {
-												e.printStackTrace();
-											}
-											break;
-										case DialogInterface.BUTTON_POSITIVE:
-											try {
-												//Delete the item from the database
-
-												String[] whereArgs = {game_id};
-
-												//Utilize the content resolver to delete a row from the database
-												contentResolver.delete(ContentProviderClass.LOC_URI, dbHelper.COLUMN_GAME_ID + " =?", whereArgs); //Update data into the db
-
-												//Reset the fragment to update the deleted item
-												getFragmentManager().popBackStack();
-											} catch (Exception e) {
-												e.printStackTrace();
-											}
-											break;
-									}
-								}
-							};
-							AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-							builder.setTitle("Delete Game");
-							builder.
-									setMessage("Are you sure you want to delete this game from your collection?").
-									setNegativeButton("No", dialogClickListener).
-									setPositiveButton("Yes", dialogClickListener).
-									show();
-
-							return false;
-						}
-					});
+					holder.tv_console_name.setOnLongClickListener(new CustomLongPressButton(final_game_id));
 
 				} else if (last_field_option.equalsIgnoreCase("Rate")){
+
+					//Custom on click listener handles the clicks from the image button and the title. Opens up the DetailsActivity
+					holder.imageView.setOnClickListener(new CustomButton(final_game_id));
+					holder.tv_game_name.setOnClickListener(new CustomButton(final_game_id));
 
 					//Just in case there are more significant figures, trim down to the first character (IE 1.0 vs 1)
 					rating1 = rating1.substring(0, Math.min(rating1.length(), 1));
 					//If the value is not a mistake, set the rating in the view window
 					if (rating1.equalsIgnoreCase("-1.0")){
-						Log.d("Rating negative on Game: ", passed_game_id);
+						Log.d("Rating negative on Game: ", final_game_id);
 					} else {
 						holder.ratingBar.setRating(Integer.parseInt(rating1));
 					}
@@ -404,43 +301,191 @@ public class ListFragment extends Fragment{
 					Set the rating bar to an on click listener. If the user chooses a rating, it
 					passes the score into the database for the respective game
 					 */
-					holder.ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
-						public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
-
-							int score = (int) rating;
-							if (score > 4){
-								score = 4; //To prevent out of bounds issues
-							}
-
-							int score_to_add_to_db = score;
-
-							String game_id = passed_game_id;
-
-							try {
-								//Update the database
-								ContentValues cv1 = new ContentValues();
-								cv1.put(dbHelper.COLUMN_RATING, Integer.toString(score_to_add_to_db));
-
-								String[] whereArgs = {game_id};
-
-								//Utilize the content resolver to add the values into the database
-								contentResolver.update(ContentProviderClass.LOC_URI, cv1, dbHelper.COLUMN_GAME_ID + " =?", whereArgs); //Update data into the db
-
-								Log.d("Database ", "Updated Successfully with a rating of: " + score_to_add_to_db);
-
-							} catch (Error e){
-								e.printStackTrace();
-								Log.d("Database ", "Was NOT updated with rating of: " + score_to_add_to_db);
-							}
-
-						}
-					});
+					holder.ratingBar.setOnRatingBarChangeListener(new CustomRating(final_game_id));
 				}
+
+				cursor1.close();
 			}
 
 			return rowView;
 		}
 
+	}
+
+	//Custom button for all onclick events that need to be set to open detail activity
+	public class CustomButton implements View.OnClickListener {
+		private String gameid;
+
+		public CustomButton (String str){
+			this.gameid = str;
+		}
+
+		@Override
+		public void onClick(View v) {
+			Log.d("Game ID is :", gameid);
+			Intent intent = new Intent(getActivity(), DetailsActivity.class);
+			intent.putExtra("game_id", gameid);
+			startActivity(intent);
+		}
+	}
+
+	//Custom button for all long-press events
+	public class CustomLongPressButton implements View.OnLongClickListener {
+		private String gameid;
+		private ContentResolver contentResolver;
+		private DbHelper dbHelper;
+
+		public CustomLongPressButton (String str){
+			this.gameid = str;
+			this.contentResolver = getActivity().getContentResolver();
+			this.dbHelper = new DbHelper(getActivity());
+		}
+
+		@Override
+		public boolean onLongClick(View v) {
+			//Dialog popup asking if they want to delete the record
+			DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					switch (which) {
+						//If they hit close, it will dismiss this dialog box
+						case DialogInterface.BUTTON_NEGATIVE:
+							try {
+								dialog.dismiss();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							break;
+						case DialogInterface.BUTTON_POSITIVE:
+							try {
+								//Delete the item from the database
+
+								String[] whereArgs = {gameid};
+								Log.d("Game ID being deleted ", gameid);
+								//Utilize the content resolver to delete a row from the database
+								contentResolver.delete(ContentProviderClass.LOC_URI, dbHelper.COLUMN_GAME_ID + " =?", whereArgs); //Update data into the db
+
+								getFragmentManager().popBackStack();
+								Log.d("Backstack", "Popped");
+
+
+								//Add a 1/2 a second delay to allow for the db to be updated
+								Handler handler0 = new Handler();
+								//Adds a short delay in order to allow for the keyboard to disappear and the popup to come up
+								handler0.postDelayed(new Runnable() {
+									public void run() {
+										//Reset the fragment to update the deleted item. Delay by a second to allow for db deletion
+
+									}
+								}, (500));
+
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							break;
+					}
+				}
+			};
+			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+			builder.setTitle("Delete Game");
+			builder.
+					setMessage("Are you sure you want to delete this game from your collection?").
+					setNegativeButton("No", dialogClickListener).
+					setPositiveButton("Yes", dialogClickListener).
+					show();
+			return false;
+		}
+	}
+
+	//Custom Check Change listener for checkbox buttons
+	public class CustomCheckbox implements CompoundButton.OnCheckedChangeListener {
+		private String gameid;
+		private ContentResolver contentResolver;
+		private DbHelper dbHelper;
+
+		public CustomCheckbox(String str){
+			this.gameid = str;
+			this.contentResolver = getActivity().getContentResolver();
+			this.dbHelper = new DbHelper(getActivity());
+		}
+
+		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+			if (isChecked){
+
+				try {
+					//Update the database
+					ContentValues cv1 = new ContentValues();
+					cv1.put(dbHelper.COLUMN_PLAYED_CHECKBOX, "true");
+
+					String[] whereArgs = {gameid};
+
+					//Utilize the content resolver to add the values into the database
+					contentResolver.update(ContentProviderClass.LOC_URI, cv1, dbHelper.COLUMN_GAME_ID + " =?", whereArgs); //Update data into the db
+
+					Log.d("Database ", "Updated Successfully with boolean - true");
+
+				} catch (Error e){
+					e.printStackTrace();
+					Log.d("Database ", "Was NOT updated with boolean");
+				}
+
+			} else {
+
+				try {
+					//Update the database
+					ContentValues cv1 = new ContentValues();
+					cv1.put(dbHelper.COLUMN_PLAYED_CHECKBOX, "false");
+
+					String[] whereArgs = {gameid};
+
+					//Utilize the content resolver to add the values into the database
+					contentResolver.update(ContentProviderClass.LOC_URI, cv1, dbHelper.COLUMN_GAME_ID + " =?", whereArgs); //Update data into the db
+
+					Log.d("Database ", "Updated Successfully with boolean - false");
+				} catch (Error e){
+					e.printStackTrace();
+					Log.d("Database ", "Was NOT updated with boolean");
+				}
+			}
+		}
+	}
+
+	//Custom Rating Change listener for rating bars
+	public class CustomRating implements RatingBar.OnRatingBarChangeListener {
+		private String gameid;
+		private ContentResolver contentResolver;
+		private DbHelper dbHelper;
+
+		public CustomRating(String str){
+			this.gameid = str;
+			this.contentResolver = getActivity().getContentResolver();
+			this.dbHelper = new DbHelper(getActivity());
+		}
+
+		public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
+			int score = (int) rating;
+			if (score > 4){
+				score = 4; //To prevent out of bounds issues
+			}
+
+			int score_to_add_to_db = score;
+
+			try {
+				//Update the database
+				ContentValues cv1 = new ContentValues();
+				cv1.put(dbHelper.COLUMN_RATING, Integer.toString(score_to_add_to_db));
+
+				String[] whereArgs = {gameid};
+
+				//Utilize the content resolver to add the values into the database
+				contentResolver.update(ContentProviderClass.LOC_URI, cv1, dbHelper.COLUMN_GAME_ID + " =?", whereArgs); //Update data into the db
+
+				Log.d("Database ", "Updated Successfully with a rating of: " + score_to_add_to_db);
+
+			} catch (Error e){
+				e.printStackTrace();
+				Log.d("Database ", "Was NOT updated with rating of: " + score_to_add_to_db);
+			}
+		}
 	}
 
 }

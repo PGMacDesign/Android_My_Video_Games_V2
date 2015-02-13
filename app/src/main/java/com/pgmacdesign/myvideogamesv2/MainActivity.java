@@ -4,10 +4,14 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 
 import com.pgmacdesign.myvideogamesv2.Database.DBFunctions;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
 The Main activity, will allow users to choose between 2 options, going to the ListGamesActivity or
@@ -33,6 +37,16 @@ public class MainActivity extends Activity implements View.OnClickListener{
 		if (settings.getBoolean("my_first_time0", true)) {
 			//The app is being launched for first time, do something
 			DBFunctions.setupDBWithInitialValues(this);
+		}
+
+		//List of the row numbers (in string format)
+		List<String> passed_list_rows = new ArrayList<>();
+
+		//Get the row numbers by querying the database
+		passed_list_rows = DBFunctions.pullGameIDFromDatabase(this, passed_list_rows);
+
+		for (int i = 0; i<passed_list_rows.size(); i++){
+			Log.d("List row " + i, " " + passed_list_rows.get(i));
 		}
 
 	}

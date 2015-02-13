@@ -14,7 +14,7 @@ public class DbHelper extends SQLiteOpenHelper {
 	//Standard variables for the database functions
 	public static final String DATABASE_NAME = "videogamesdb2";
 	public static final String TABLE_NAME = "videogamestable";
-	public static final int DATABASE_VERSION = 6;
+	public static final int DATABASE_VERSION = 7;
 	public static final String DROP_TABLE = "DROP TABLE IF EXISTS "+ TABLE_NAME;
 
 	public static final String C_ID = "_id";

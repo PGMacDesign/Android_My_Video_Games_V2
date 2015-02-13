@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -126,6 +127,8 @@ public class AddNewGameFragment extends Fragment implements AdapterView.OnItemCl
 					//Replace all remaining whitespace (IE space in a name, Final Fantasy) with an underscore
 					game_name = game_name.replaceAll(" ", "_").toLowerCase();
 
+					final String temp_game_name = game_name;
+
 					try {
 						//Choose a random fact from the string array
 						String randomStr = facts[new Random().nextInt(facts.length)];
@@ -158,29 +161,38 @@ public class AddNewGameFragment extends Fragment implements AdapterView.OnItemCl
 						e.printStackTrace();
 					}
 
-					//New async task to run in the background. Pass in the 2 strings
-					try {
-						String web_url_to_send = "http://www.giantbomb.com/api/search/?api_key=9be0ead91d814eeb64cc5fb0da481ce726a22400&query=";
-						String web_url_to_send_2 = "&field_list=name,id,platforms&format=json";
-						search_response0 = new AsyncBackgroundClass(web_url_to_send, game_name, web_url_to_send_2).execute().get();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					} catch (ExecutionException e) {
-						e.printStackTrace();
-					}
 
-					//VideoGames object to hold the response of the Deserialized code
-					VideoGames search_videogames = new VideoGames();
-					/*
-					Now that the search results from the server are available,
-					deserialize the string and add the data to the object
-					 */
-					search_videogames = deserializeTheJSON(search_videogames, search_response0);
+					Handler handler0 = new Handler();
+					//Adds a short delay in order to allow for the keyboard to disappear and the popup to come up
+					handler0.postDelayed(new Runnable() {
+						public void run() {
 
-					add_new_game.setEnabled(true);
+							try {
+								String web_url_to_send = "http://www.giantbomb.com/api/search/?api_key=9be0ead91d814eeb64cc5fb0da481ce726a22400&query=";
+								String web_url_to_send_2 = "&field_list=name,id,platforms&format=json";
+								search_response0 = new AsyncBackgroundClass(web_url_to_send, temp_game_name, web_url_to_send_2).execute().get();
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							} catch (ExecutionException e) {
+								e.printStackTrace();
+							}
 
-					//Pass the video games object into the class that handles the listview
-					userMakesChoice(search_videogames);
+							//VideoGames object to hold the response of the Deserialized code
+							VideoGames search_videogames = new VideoGames();
+							/*
+							Now that the search results from the server are available,
+							deserialize the string and add the data to the object
+							 */
+							search_videogames = deserializeTheJSON(search_videogames, search_response0);
+
+							add_new_game.setEnabled(true);
+
+							//Pass the video games object into the class that handles the listview
+							userMakesChoice(search_videogames);
+
+							//
+						}
+					}, (1000*1));
 				}
 			}
 		});

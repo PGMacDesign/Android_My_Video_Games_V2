@@ -28,7 +28,6 @@ public class ContentProviderClass extends ContentProvider {
 		uriMatcher.addURI(AUTH, DbHelper.TABLE_NAME, MATCHING);
 	}
 
-
 	public boolean onCreate() {
 		dbHelper = new DbHelper(getContext());
 		db = dbHelper.getWritableDatabase();
@@ -36,8 +35,19 @@ public class ContentProviderClass extends ContentProvider {
 		return true;
 	}
 
-
+	//Deletes items from the database
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
+		dbHelper.getWritableDatabase();
+
+		//If it matches, return 1
+		if (uriMatcher.match(uri) == MATCHING){
+			db.delete(dbHelper.TABLE_NAME, selection, selectionArgs);
+		}
+
+		//Insert data to database
+		getContext().getContentResolver().notifyChange(uri, null);
+
+		Log.d("Delete URI ", "delete complete");
 		return 0;
 	}
 
@@ -46,7 +56,7 @@ public class ContentProviderClass extends ContentProvider {
 		return null;
 	}
 
-	@Override
+	//Inserts data into the database
 	public Uri insert(Uri uri, ContentValues values) {
 		dbHelper.getWritableDatabase();
 
@@ -79,8 +89,19 @@ public class ContentProviderClass extends ContentProvider {
 	}
 
 
-	@Override
+	//Updates items within the database
 	public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+		dbHelper.getWritableDatabase();
+
+		//If it matches, return 1
+		if (uriMatcher.match(uri) == MATCHING){
+			db.update(dbHelper.TABLE_NAME, values, selection, selectionArgs);
+		}
+
+		//Insert data to database
+		getContext().getContentResolver().notifyChange(uri, null);
+
+		Log.d("Update URI", "update complete");
 		return 0;
 	}
 }

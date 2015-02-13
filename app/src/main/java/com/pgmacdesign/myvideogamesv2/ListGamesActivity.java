@@ -1,6 +1,5 @@
 package com.pgmacdesign.myvideogamesv2;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -16,7 +15,7 @@ import android.view.MenuItem;
 /**
  * Created by PatrickSSD2 on 2/10/2015.
  */
-public class ListGamesActivity extends Activity {
+public class ListGamesActivity extends ActionBarActivity {
 
 	//Fragment manager manages the respective fragments being opened, hidden, closed, etc
 	FragmentManager manager;
@@ -50,7 +49,7 @@ public class ListGamesActivity extends Activity {
 		manager = getFragmentManager();
 
 		//Manages the backstack changes, useful for if they accidentally click back
-		//getFragmentManager().addOnBackStackChangedListener(getListener());/////////////////////////////
+		getFragmentManager().addOnBackStackChangedListener(getListener());
 
 
 		//Create a fragment and transaction and then commit them
@@ -145,6 +144,8 @@ public class ListGamesActivity extends Activity {
 			Intent intent = new Intent(this, MainActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
+
+
 			return true;
 		}
 
