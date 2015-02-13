@@ -16,29 +16,6 @@ This is a grouping of database related methods. They are placed here for reusabi
  */
 public class DBFunctions {
 
-	/*
-	This class pulls data from the database, adds each column to a list, and then adds those
-	respective lists to a list of lists. When finished, it returns the list of lists
-	 */
-	public static List<List<String>> pullAllFromDatabase(Context context, List<String> passed_list){
-
-		DbHelper dbHelper = new DbHelper(context);
-		SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-		//Create a list of list of Strings that will be eventually returned by this method
-		List<List<String>> returned_list = new ArrayList<>();
-
-		//Loop through the list and pull the respective data from each row into a list of its own
-		for (int i = 0; i< passed_list.size(); i++){
-			List<String> temp_list = pullRowFromDatabase(context, passed_list.get(i));
-			returned_list.add(temp_list);
-		}
-
-		//To prevent memory leaks, close the respective objects
-		db.close();
-		return returned_list;
-	}
-
 	//Pulls all of the gameIDs from the database.
 	public static List<String> pullGameIDFromDatabase(Context context, List<String> passed_list_rows){
 		DbHelper dbHelper = new DbHelper(context);

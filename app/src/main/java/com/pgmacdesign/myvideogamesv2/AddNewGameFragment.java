@@ -7,6 +7,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -97,103 +99,113 @@ public class AddNewGameFragment extends Fragment implements AdapterView.OnItemCl
 		this.add_new_game.setOnClickListener(new View.OnClickListener() {
 			//This will take the input data and search the web for the respective game
 			public void onClick(View v) {
-				//Disables the button in case they click it multiple times
-				add_new_game.setEnabled(false);
 
-				//Clear the list of game IDs so no residuals carry over
-				search_game_list_id.clear();
+				//Check if there is internet connection
+				boolean do_we_have_network_connection = haveNetworkConnection();
 
-				//These 4 lines of code hide the keyboard when the user presses the button
-				InputMethodManager inputManager = (InputMethodManager)
-						getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-				inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(),
-						InputMethodManager.HIDE_NOT_ALWAYS);
-
-				Toast.makeText(getActivity(), "Loading your results now", Toast.LENGTH_LONG).show();
-
-				String game_name = edit_text_game_name.getText().toString();
-
-				if (game_name.equalsIgnoreCase("")){
+				//Internet is confirmed, move forward
+				if (do_we_have_network_connection){
+					//Disables the button in case they click it multiple times
 					add_new_game.setEnabled(false);
-				} else if (game_name == null){
-					add_new_game.setEnabled(false);
-				} else {
 
-					int length = game_name.length();
-					//If the String ends with a whitespace (IE the auto complete helped out), delete the whitespace
-					if (Character.isWhitespace(game_name.charAt(length - 1))) {
-						game_name = game_name.substring(0, game_name.length() - 1);
-					}
-					//Replace all remaining whitespace (IE space in a name, Final Fantasy) with an underscore
-					game_name = game_name.replaceAll(" ", "_").toLowerCase();
+					//Clear the list of game IDs so no residuals carry over
+					search_game_list_id.clear();
 
-					final String temp_game_name = game_name;
+					//These 4 lines of code hide the keyboard when the user presses the button
+					InputMethodManager inputManager = (InputMethodManager)
+							getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+					inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(),
+							InputMethodManager.HIDE_NOT_ALWAYS);
 
-					try {
-						//Choose a random fact from the string array
-						String randomStr = facts[new Random().nextInt(facts.length)];
+					Toast.makeText(getActivity(), "Loading your results now", Toast.LENGTH_LONG).show();
 
-						//Setup a Dialog popup to entertain the user for the seconds until the server response comes
+					String game_name = edit_text_game_name.getText().toString();
+
+					if (game_name.equalsIgnoreCase("")){
+						add_new_game.setEnabled(false);
+					} else if (game_name == null){
+						add_new_game.setEnabled(false);
+					} else {
+
+						int length = game_name.length();
+						//If the String ends with a whitespace (IE the auto complete helped out), delete the whitespace
+						if (Character.isWhitespace(game_name.charAt(length - 1))) {
+							game_name = game_name.substring(0, game_name.length() - 1);
+						}
+						//Replace all remaining whitespace (IE space in a name, Final Fantasy) with an underscore
+						game_name = game_name.replaceAll(" ", "_").toLowerCase();
+
+						final String temp_game_name = game_name;
+
+						try {
+							//Choose a random fact from the string array
+							String randomStr = facts[new Random().nextInt(facts.length)];
+
+							//Setup a Dialog popup to entertain the user for the seconds until the server response comes
 						/*
 						(Side note, people's attention spans have gotten bad as even I need something
 						to entertain me for 10 seconds these days... Squirrel!)
 						 */
-						DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int which) {
-								switch (which) {
-									//If they hit close, it will dismiss this dialog box
-									case DialogInterface.BUTTON_NEGATIVE:
-										try {
-											dialog.dismiss();
-										} catch (Exception e) {
-											e.printStackTrace();
-										}
-										break;
+							DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int which) {
+									switch (which) {
+										//If they hit close, it will dismiss this dialog box
+										case DialogInterface.BUTTON_NEGATIVE:
+											try {
+												dialog.dismiss();
+											} catch (Exception e) {
+												e.printStackTrace();
+											}
+											break;
+									}
 								}
-							}
-						};
-						AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-						builder.setTitle("This may take up to 10 seconds, so here is a random fact:");
-						builder.setMessage(randomStr).setNegativeButton("Close", dialogClickListener).show();
+							};
+							AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+							builder.setTitle("This may take up to 10 seconds, so here is a random fact:");
+							builder.setMessage(randomStr).setNegativeButton("Close", dialogClickListener).show();
 
-					} catch (NullPointerException e){
-						Toast.makeText(getActivity(), "Oops! Something went wrong! Please check your internet connection and try again",Toast.LENGTH_SHORT).show();
-						e.printStackTrace();
-					}
+						} catch (NullPointerException e){
+							Toast.makeText(getActivity(), "Oops! Something went wrong! Please check your internet connection and try again",Toast.LENGTH_SHORT).show();
+							e.printStackTrace();
+						}
 
 
-					Handler handler0 = new Handler();
-					//Adds a short delay in order to allow for the keyboard to disappear and the popup to come up
-					handler0.postDelayed(new Runnable() {
-						public void run() {
+						Handler handler0 = new Handler();
+						//Adds a short delay in order to allow for the keyboard to disappear and the popup to come up
+						handler0.postDelayed(new Runnable() {
+							public void run() {
 
-							try {
-								String web_url_to_send = "http://www.giantbomb.com/api/search/?api_key=9be0ead91d814eeb64cc5fb0da481ce726a22400&query=";
-								String web_url_to_send_2 = "&field_list=name,id,platforms&format=json";
-								search_response0 = new AsyncBackgroundClass(web_url_to_send, temp_game_name, web_url_to_send_2).execute().get();
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							} catch (ExecutionException e) {
-								e.printStackTrace();
-							}
+								try {
+									String web_url_to_send = "http://www.giantbomb.com/api/search/?api_key=9be0ead91d814eeb64cc5fb0da481ce726a22400&query=";
+									String web_url_to_send_2 = "&field_list=name,id,platforms&format=json";
+									search_response0 = new AsyncBackgroundClass(web_url_to_send, temp_game_name, web_url_to_send_2).execute().get();
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								} catch (ExecutionException e) {
+									e.printStackTrace();
+								}
 
-							//VideoGames object to hold the response of the Deserialized code
-							VideoGames search_videogames = new VideoGames();
+								//VideoGames object to hold the response of the Deserialized code
+								VideoGames search_videogames = new VideoGames();
 							/*
 							Now that the search results from the server are available,
 							deserialize the string and add the data to the object
 							 */
-							search_videogames = deserializeTheJSON(search_videogames, search_response0);
+								search_videogames = deserializeTheJSON(search_videogames, search_response0);
 
-							add_new_game.setEnabled(true);
+								add_new_game.setEnabled(true);
 
-							//Pass the video games object into the class that handles the listview
-							userMakesChoice(search_videogames);
+								//Pass the video games object into the class that handles the listview
+								userMakesChoice(search_videogames);
 
-							//
-						}
-					}, (1000*1));
+								//
+							}
+						}, (1000*1));
+					}
+				} else {
+					Toast.makeText(getActivity(), "You currently have no network connection! Please connect to the internet and try again.", Toast.LENGTH_LONG).show();
 				}
+
 			}
 		});
 
@@ -512,7 +524,7 @@ public class AddNewGameFragment extends Fragment implements AdapterView.OnItemCl
 	}
 
 	//Returns a VideoGames object after deserializing the data. @Params, VideoGames Object to return, The JSON String to be deserialized
-	private VideoGames deserializeTheJSON(VideoGames videoGames, String JSONString){
+	public static VideoGames deserializeTheJSON(VideoGames videoGames, String JSONString){
 
 		//GSON object to assist with deserialization
 		GsonBuilder gsonBuilder = new GsonBuilder();
@@ -543,5 +555,23 @@ public class AddNewGameFragment extends Fragment implements AdapterView.OnItemCl
 		if (game_name != null){
 			outState.putString("edit_text_game_name", game_name);
 		}
+	}
+
+	//This class checks for network connection (Weather mobile or wifi)
+	private boolean haveNetworkConnection() {
+		boolean haveConnectedWifi = false;
+		boolean haveConnectedMobile = false;
+
+		ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo[] netInfo = cm.getAllNetworkInfo();
+		for (NetworkInfo ni : netInfo) {
+			if (ni.getTypeName().equalsIgnoreCase("WIFI"))
+				if (ni.isConnected())
+					haveConnectedWifi = true;
+			if (ni.getTypeName().equalsIgnoreCase("MOBILE"))
+				if (ni.isConnected())
+					haveConnectedMobile = true;
+		}
+		return haveConnectedWifi || haveConnectedMobile;
 	}
 }
